@@ -59,7 +59,7 @@ public class JobApplicationController {
         return "redirect:/jobs";
     }
 
-    // ✅ View user’s job applications
+    // ✅ View user job applications
     @GetMapping
     public String myApplications(@AuthenticationPrincipal UserDetails currentUser, Model model) {
         User user = userRepository.findByUsername(currentUser.getUsername()).orElseThrow();
