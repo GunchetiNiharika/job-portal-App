@@ -23,8 +23,8 @@ jobs:
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{gniharika26 }}
-        password: ${{Banny@2604 }}
+        username: ${{secrets.DOCKER_USERNAME }}
+        password: ${{secrets.DOCKER_PASSWORD }}
 
     - name: Build Docker Image
       run: docker build -t gniharika26/job-portal-app:latest .
