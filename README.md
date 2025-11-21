@@ -5,7 +5,7 @@ Technologies & Learning Highlights
 
 Backend: Java 21, Spring Boot, Spring MVC, Spring Security
 
-Frontend: Thymeleaf, HTML, CSS, JavaScript
+Frontend: Thymeleaf, HTML, CSS
 
 Database: PostgreSQL (AWS RDS or local)
 
