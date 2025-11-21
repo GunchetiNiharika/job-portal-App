@@ -1,10 +1,12 @@
 package com.jobportal.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Job {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,45 +18,34 @@ public class Job {
     @Column(length = 2000)
     private String description;
 
-    public String getTitle() {
-        return title;
-    }
+    @ManyToOne
+    @JoinColumn(name = "recruiter_id")
+    private User postedBy;
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<JobApplication> applications = new HashSet<>();
 
-    // Similarly add for company, location, description
+    public Job() {}
 
-    public String getCompany() {
-        return company;
-    }
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setCompany(String company) {
-        this.company = company;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getLocation() {
-        return location;
-    }
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public User getPostedBy() { return postedBy; }
+    public void setPostedBy(User postedBy) { this.postedBy = postedBy; }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(){
-        this.id=id;
-    }
+    public Set<JobApplication> getApplications() { return applications; }
+    public void setApplications(Set<JobApplication> applications) { this.applications = applications; }
 }

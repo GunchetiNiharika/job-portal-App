@@ -3,6 +3,7 @@ package com.jobportal.controller;
 import com.jobportal.dto.UserRegistrationDto;
 import com.jobportal.entity.User;
 import com.jobportal.Repository.UserRepository;
+import com.jobportal.enums.Role;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,8 +47,8 @@ public class RegistrationController {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         // Assign role based on user selection, default to USER
         String selectedRole = dto.getRole() != null ? dto.getRole() : "USER";
-        user.setRoles(Set.of(selectedRole));
-
+        Role role = Role.valueOf(selectedRole.toUpperCase());
+        user.setRoles(Set.of(role));
         userRepository.save(user);
         model.addAttribute("success", "Registration successful! You can now login.");
         return "redirect:/login";

@@ -69,9 +69,18 @@
             transition: background-color 0.3s, transform 0.2s;
         }
 
-        button:hover {
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button:hover:enabled {
             background-color: #218838;
             transform: translateY(-1px);
+        }
+
+        input[type="file"] {
+            margin-bottom: 8px;
         }
 
         form {
@@ -103,14 +112,22 @@
 
 <h1>Available Jobs</h1>
 
+<form th:action="@{/user/jobs}" method="get" style="text-align:center; margin-bottom:20px;">
+    <input type="text" name="search" placeholder="Search jobs..." th:value="${search}" />
+    <button type="submit">Search</button>
+</form>
+
 <div class="nav">
-    <!-- Show "Post a Job" only to recruiters -->
-    <a th:href="@{/jobs/add}" sec:authorize="hasRole('RECRUITER')">Post a Job</a> |
-    <a th:href="@{/applications}">My Applications</a> |
-    <a th:href="@{/logout}">Logout</a>
+    <a th:href="@{/applications/my}" sec:authorize="hasRole('USER')">My Applications</a> |
+    <form th:action="@{/logout}" method="post" style="display:inline;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" style="background:none; border:none; color:#007bff; font-weight:bold; cursor:pointer; padding:0;">
+            Logout
+        </button>
+    </form>
 </div>
 
-<!-- ✅ Flash messages -->
+<!-- Flash messages -->
 <div th:if="${success}" class="message success" th:text="${success}"></div>
 <div th:if="${error}" class="message error" th:text="${error}"></div>
 
@@ -121,28 +138,31 @@
         <th>Company</th>
         <th>Location</th>
         <th>Description</th>
-        <th sec:authorize="hasAnyRole('USER','RECRUITER')">Action</th>
+        <th sec:authorize="hasRole('USER')">Action</th>
     </tr>
     </thead>
-
     <tbody>
     <tr th:each="job : ${jobs}">
         <td th:text="${job.title}"></td>
         <td th:text="${job.company}"></td>
         <td th:text="${job.location}"></td>
         <td th:text="${job.description}"></td>
-
-        <!-- ✅ Allow both USER and RECRUITER to apply -->
-        <td sec:authorize="hasAnyRole('USER','RECRUITER')">
-            <form th:action="@{'/applications/apply/' + ${job.id}}" method="post">
-                <!-- Required for Spring Security -->
+        <td sec:authorize="hasRole('USER')">
+            <form th:action="@{'/applications/apply/' + ${job.id}}" method="post" enctype="multipart/form-data">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit">Apply</button>
+
+                <input type="file" name="resume" required
+                       th:disabled="${appliedJobIds.contains(job.id)}" />
+
+                <button type="submit"
+                        th:disabled="${appliedJobIds.contains(job.id)}">
+                    <span th:if="${appliedJobIds.contains(job.id)}">Already Applied</span>
+                    <span th:unless="${appliedJobIds.contains(job.id)}">Apply</span>
+                </button>
             </form>
         </td>
     </tr>
 
-    <!-- ✅ Fallback if no jobs -->
     <tr th:if="${#lists.isEmpty(jobs)}">
         <td colspan="5" style="text-align:center;">No jobs available at the moment.</td>
     </tr>

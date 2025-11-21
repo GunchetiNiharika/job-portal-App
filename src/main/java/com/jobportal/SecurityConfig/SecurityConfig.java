@@ -1,11 +1,10 @@
 package com.jobportal.SecurityConfig;
 
+import com.jobportal.SecurityConfig.CustomLoginSuccessHandler;
 import com.jobportal.Service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,45 +16,62 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final CustomLoginSuccessHandler loginSuccessHandler;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+                          CustomLoginSuccessHandler loginSuccessHandler) {
         this.userDetailsService = userDetailsService;
+        this.loginSuccessHandler = loginSuccessHandler;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+
+                        // Public pages
                         .requestMatchers(
                                 "/register",
                                 "/error",
-                                "/login",
-                                "/h2-console/**",
                                 "/css/**",
-                                "/js/**"// <-- add this line
+                                "/js/**",
+                                "/h2-console/**"
                         ).permitAll()
-                        .requestMatchers("/jobs/add", "/jobs/edit/**", "/jobs/delete/**").hasRole("RECRUITER")
-                        .requestMatchers("/applications/**").hasAnyRole("USER", "RECRUITER")
-                        // candidate-only endpoints
+
+                        // USER routes
+                        .requestMatchers("/user/**").hasRole("USER")
+                        .requestMatchers("/applications/apply/**").hasRole("USER")
+                        .requestMatchers("/applications/my").hasRole("USER")
+
+                        // Download resumes — both USER and RECRUITER allowed
+                        .requestMatchers("/applications/resume/**").hasAnyRole("USER", "RECRUITER")
+
+                        // RECRUITER routes
+                        .requestMatchers("/recruiter/**").hasRole("RECRUITER")
+
+                        // Anything else requires login
                         .anyRequest().authenticated()
                 )
 
-
+                // Login page
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/jobs", true)
+                        .successHandler(loginSuccessHandler)
                         .failureUrl("/login?error=true")
                         .permitAll()
                 )
+
+                // Logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
                         .permitAll()
                 )
-                // Disable CSRF for H2 console (and forms during dev)
+
+                // Disable CSRF for H2 db console
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
 
-                // Allow frames (needed for H2 console)
+                // H2 console frame settings
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
@@ -73,6 +89,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
 }

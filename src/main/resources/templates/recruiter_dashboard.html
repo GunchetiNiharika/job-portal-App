@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Recruiter Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7f9fc; margin: 0; padding: 0; color: #333; }
+        h1, h2 { text-align: center; color: #2575fc; margin-top: 30px; }
+        .container { width: 90%; max-width: 1000px; margin: 0 auto; }
+
+        /* Buttons */
+        button.action { background-color: #007bff; color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; transition: 0.2s; }
+        button.action:hover { background-color: #0056b3; transform: translateY(-1px); }
+
+        /* Form styling */
+        form { background: white; padding: 20px; margin-bottom: 40px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+
+        /* Table styling */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 50px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        th, td { padding: 12px 15px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        tr:hover { background-color: #e8f4fd; }
+
+        .nav { text-align: center; margin: 20px 0; }
+        .nav a { margin: 0 10px; text-decoration: none; color: #007bff; font-weight: bold; }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Recruiter Dashboard</h1>
+
+    <div class="nav">
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" style="background:none; border:none; color:#007bff; cursor:pointer; font-weight:bold; text-decoration:underline; padding:0;">
+                Logout
+            </button>
+        </form>
+    </div>
+
+    <!-- Add New Job Form -->
+    <h2>Add New Job</h2>
+    <form th:action="@{/recruiter/add-job}" th:object="${jobForm}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <label>Title:</label>
+        <input type="text" th:field="*{title}" placeholder="Job Title" required />
+        <label>Company:</label>
+        <input type="text" th:field="*{company}" placeholder="Company Name" required />
+        <label>Location:</label>
+        <input type="text" th:field="*{location}" placeholder="Job Location" required />
+        <label>Description:</label>
+        <textarea th:field="*{description}" rows="4" placeholder="Job Description" required></textarea>
+        <button type="submit" class="action">Post Job</button>
+    </form>
+
+    <!-- My Posted Jobs -->
+    <h2>My Posted Jobs</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Description</th>
+            <th>Applications</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="job : ${postedJobs}">
+            <td th:text="${job.title}"></td>
+            <td th:text="${job.company}"></td>
+            <td th:text="${job.location}"></td>
+            <td th:text="${job.description}"></td>
+            <td>
+                <a th:href="@{/recruiter/jobs/{jobId}/applications(jobId=${job.id})}">
+                    <button type="button" class="action">View Applications</button>
+                </a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(postedJobs)}">
+            <td colspan="5" style="text-align:center;">You have not posted any jobs yet.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

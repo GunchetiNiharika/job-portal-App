@@ -4,19 +4,21 @@ import jakarta.validation.constraints.NotBlank;
 
 public class UserRegistrationDto {
 
-    @NotBlank(message = "Username is required")
+    @NotBlank
     private String username;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank
     private String password;
 
-    @NotBlank(message = "Confirm password is required")
+    @NotBlank
     private String confirmPassword;
 
-    @NotBlank(message = "Role is required") // optional: you can enforce selection
-    private String role; // <-- new field for selected role
+    @NotBlank
+    private String role;
 
-    // getters and setters
+    public UserRegistrationDto() {}
+
+    // Getters and Setters
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
