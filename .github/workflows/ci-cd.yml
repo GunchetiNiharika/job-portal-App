@@ -9,26 +9,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v3
-      with:
-        java-version: 21
-        distribution: temurin
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: temurin
 
-    - name: Build Spring Boot JAR
-      run: mvn clean package -DskipTests
+      - name: Build Spring Boot JAR
+        run: mvn clean package -DskipTests
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{secrets.DOCKER_USERNAME }}
-        password: ${{secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker Image
-      run: docker build -t gniharika26/job-portal-app:latest .
+      - name: Build Docker Image with Secrets
+        run: |
+          docker build \
+            --build-arg DB_HOST=${{ secrets.DB_HOST }} \
+            --build-arg DB_PORT=${{ secrets.DB_PORT }} \
+            --build-arg DB_NAME=${{ secrets.DB_NAME }} \
+            --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} \
+            --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
+            --build-arg S3_BUCKET=${{ secrets.S3_BUCKET }} \
+            -t gniharika26/job-portal-app:latest .
 
-    - name: Push Docker Image
-      run: docker push gniharika26/job-portal-app:latest
+      - name: Push Docker Image
+        run: docker push gniharika26/job-portal-app:latest
